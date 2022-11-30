@@ -1,0 +1,171 @@
+COMMIT WORK;
+SET AUTODDL OFF;
+SET TERM ^ ;
+
+/* Stored procedures */
+
+CREATE PROCEDURE "RESUMOPAC" 
+(
+  "CODIGOCPS" INTEGER
+)
+RETURNS
+(
+  "TEXTO" VARCHAR(3000)
+)
+AS
+BEGIN EXIT; END ^
+
+
+ALTER PROCEDURE "RESUMOPAC" 
+(
+  "CODIGOCPS" INTEGER
+)
+RETURNS
+(
+  "TEXTO" VARCHAR(3000)
+)
+AS
+declare variable resumo varchar(250);
+declare variable resumoaux varchar(250);
+declare variable textoaux varchar(30000);
+declare variable textoaux2 varchar(30000);
+declare variable textoaux3 varchar(30000);
+declare variable textoaux4 varchar(30000);
+declare variable textoaux5 varchar(30000);
+declare variable textoaux6 varchar(30000);
+declare variable textoaux7 varchar(30000);
+declare variable textoaux8 varchar(30000);
+declare variable textoaux9 varchar(30000);
+declare variable textoaux10 varchar(30000);
+declare variable conteudo blob;
+declare variable tipocps integer;
+begin
+  texto = '';
+  resumoaux = null;
+  texto = '';
+  select codigopla from cps1 where codigocps = :codigocps into :tipocps;
+
+  if (tipocps > 2) Then
+  begin
+-------------------------------------------------------------------------------------------------------
+ /*   if (texto is null) then 
+      texto = '';
+    select first 1 extract(day from  datahora)|| '/' || extract(month from  datahora) || '/' || extract(year from  datahora), medicament
+    from notamed INNER join notamed2 on notamed.A_NOTAMED = notamed2.A_NOTAMED
+    where notamed.CODIGOCPS = :CODIGOCPS and notamed.TIPO = 10
+    order by notamed2.SEQUENCIA desc 
+     into :texto, textoaux3;
+     texto =  texto || ' ' || textoaux3; -- sinalizacao de leitos 
+    if (rtrim(texto) <> '') then   
+      suspend;*/
+ ----------------------------------------------------------------------------------------------------------------     
+    if (texto is null) then
+       texto = '';
+    for select extract(day from  datahora)|| '/' || extract(month from  datahora) || '/' || extract(year from  datahora), medicament
+    from notamed INNER join notamed2 on notamed.A_NOTAMED = notamed2.A_NOTAMED
+    where notamed.CODIGOCPS = :CODIGOCPS and notamed.TIPO = 10 and medicament not containing 'Risco'   -- sinalizacao de leitos 18092020 eduardo
+    order by notamed2.SEQUENCIA desc
+     into :resumo, textoaux3 do
+    begin
+         texto =  texto ||  resumo || '  ->   ' || textoaux3 || ' ' || ascii_char(13)|| ascii_char(10);
+    end
+    if (strlen(texto) > 10) then
+      suspend;
+------------------------------------------------------------------------------------------------------------
+    conteudo = null;
+    SELECT FIRST 1 (select texto from RTF_CONVERT(PLANO_CONDUTA)),  extract(day from DATAHORA) || '/' || extract(month from DATAHORA) FROM EVOLUCAOENF WHERE CODIGOCPS = :CODIGOCPS AND TIPO = 'D' and 
+    PLANO_CONDUTA is not null ORDER BY DATAHORA DESC, EVOLUCAO into conteudo, textoaux3;
+    if (conteudo <> '') then
+    begin
+      texto = ' Conduta Diarista:  ' ||  textoaux3 || ' ' || ascii_char(13)|| ascii_char(10)|| substring(conteudo from 1 for 3000);
+   --   texto = substring(conteudo from 1 for 3000);
+      suspend;
+    end
+    
+-------------------------------------------------------------------------------------------------------    
+   /*   texto = '';
+    for select pacote1.NOME, min(cast(notamed.datahora as date)), max(cast(notamed.datahora as date)), count(distinct cast(notamed.datahora as date)) from notamed 
+        inner join notamed2 on (notamed.a_notamed = notamed2.a_notamed)
+        inner join pacote1 on (pacote1.PACOTE = notamed2.A_KITS)
+        where notamed.CODIGOCPS = :codigocps and notamed.impresso = 'S' and notamed.tipo = '0' group by 1 into resumo, textoaux, textoaux2, textoaux3 do
+    begin    
+          textoaux = extract(day from cast(textoaux as date)) || '/' || extract(month from cast(textoaux as date));
+          textoaux2 = extract(day from cast(textoaux2 as date)) || '/' || extract(month from cast(textoaux2 as date));
+          texto = texto || resumo || ' desde ' || textoaux || ' ate ' || textoaux2 || ' dias ' ||  textoaux3 || ascii_char(13)|| ascii_char(10);
+    end
+    if (strlen(texto) > 10) then
+       suspend;*/
+
+    -------------------------- lab 1
+  /*  texto = '';
+    for select  cpslaudovar.descricao,  list(': ' || extract(day from CPSLAUDO1.A_DATAFAT) || '/' || extract(month from CPSLAUDO1.A_DATAFAT) || ' => ' || CPSLAUDOVAR.VALOR)
+       FROM CPSLAUDO1
+       INNER JOIN CPSLAUDOVAR ON (CPSLAUDOVAR.CODIGOCPS = CPSLAUDO1.CODIGOCPS)
+       WHERE CPSLAUDO1.NUMEROORIGEM = :codigocps and cpslaudovar.data >= cast('today' as timestamp) - 1 and cpslaudovar.valor is not null
+       and  cpslaudovar.descricao in ('ddimero', 'CPK', 'CKMB',  'Calcio', 'Crea', 'Fosforo', 'Gama GT', 'Magnesio', 'Potassio')
+       group by cpslaudovar.descricao, cast(cpslaudo1.A_DATAFAT as date), cpslaudovar.data
+         order by cast(cpslaudo1.A_datafat as date) desc, cpslaudovar.descricao asc,  cpslaudovar.data 
+       into textoaux, textoaux3 do
+       begin
+           texto =  texto || ' ' ||  textoaux || ' ' ||  substring(textoaux3 from 1 for 3000) || ascii_char(13)|| ascii_char(10);
+       end  
+       if (rtrim(texto) <> '') then   
+           suspend;*/
+     -------------------------- lab 3     
+    
+ /*   texto = '';
+    for select  cpslaudovar.descricao,  list(': ' || extract(day from CPSLAUDO1.A_DATAFAT) || '/' || extract(month from CPSLAUDO1.A_DATAFAT) || ' => ' || CPSLAUDOVAR.VALOR)
+       FROM CPSLAUDO1
+       INNER JOIN CPSLAUDOVAR ON (CPSLAUDOVAR.CODIGOCPS = CPSLAUDO1.CODIGOCPS)
+       WHERE CPSLAUDO1.NUMEROORIGEM = :codigocps and cpslaudovar.data >= cast('today' as timestamp) - 1 and cpslaudovar.valor is not null
+       and  cpslaudovar.descricao in ('Sodio', 'TGO', 'TGP', 'Ureia','BilDireta','BilIndireta', 'BilTotal')
+       group by cpslaudovar.descricao, cast(cpslaudo1.A_DATAFAT as date), cpslaudovar.data
+         order by cast(cpslaudo1.A_datafat as date) desc, cpslaudovar.descricao asc,  cpslaudovar.data 
+       into textoaux, textoaux3 do
+       begin
+           texto =  texto || ' ' ||  textoaux || ' ' ||  substring(textoaux3 from 1 for 3000) || ascii_char(13)|| ascii_char(10);
+       end  
+       if (rtrim(texto) <> '') then   
+           suspend;*/
+
+  -------------------------- lab gaso   
+    
+   /* texto = '';
+    for select  cpslaudovar.descricao,  list(': ' || extract(day from CPSLAUDO1.A_DATAFAT) || '/' || extract(month from CPSLAUDO1.A_DATAFAT) || ' => ' || CPSLAUDOVAR.VALOR)
+       FROM CPSLAUDO1
+       INNER JOIN CPSLAUDOVAR ON (CPSLAUDOVAR.CODIGOCPS = CPSLAUDO1.CODIGOCPS)
+       WHERE CPSLAUDO1.NUMEROORIGEM = :codigocps and cpslaudovar.data >= cast('today' as timestamp) - 1 and cpslaudovar.valor is not null
+       and  cpslaudovar.descricao in ('PO2', 'PCO2', 'BIC', 'LAC')
+       group by cpslaudovar.descricao, cast(cpslaudo1.A_DATAFAT as date), cpslaudovar.data
+         order by cast(cpslaudo1.A_datafat as date) desc, cpslaudovar.descricao asc,  cpslaudovar.data 
+       into textoaux, textoaux3 do
+       begin
+           texto =  texto || ' ' ||  textoaux || ' ' ||  substring(textoaux3 from 1 for 3000) || ascii_char(13)|| ascii_char(10);
+       end  
+       if (rtrim(texto) <> '') then   
+           suspend;*/
+
+ -------------------------- lab hemo   
+    
+ /*   texto = '';
+    for select  cpslaudovar.descricao,  list(': ' || extract(day from CPSLAUDO1.A_DATAFAT) || '/' || extract(month from CPSLAUDO1.A_DATAFAT) || ' => ' || CPSLAUDOVAR.VALOR)
+       FROM CPSLAUDO1
+       INNER JOIN CPSLAUDOVAR ON (CPSLAUDOVAR.CODIGOCPS = CPSLAUDO1.CODIGOCPS)
+       WHERE CPSLAUDO1.NUMEROORIGEM = :codigocps and cpslaudovar.data >= cast('today' as timestamp) - 1 and cpslaudovar.valor is not null
+       and  cpslaudovar.descricao in ('HEMA', 'HEMO', 'HEMT', 'GlobalH', 'Baston', 'PlaquetasH')
+       group by cpslaudovar.descricao, cast(cpslaudo1.A_DATAFAT as date), cpslaudovar.data
+         order by cast(cpslaudo1.A_datafat as date) desc, cpslaudovar.descricao asc,  cpslaudovar.data 
+       into textoaux, textoaux3 do
+       begin
+           texto =  texto || ' ' ||  textoaux || ' ' ||  substring(textoaux3 from 1 for 3000) || ascii_char(13)|| ascii_char(10);
+       end  
+       if (rtrim(texto) <> '') then   
+           suspend;*/
+
+   end
+end
+ ^
+
+SET TERM ; ^
+COMMIT WORK;
+SET AUTODDL ON;
